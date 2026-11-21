@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Китайские ключи — тренажёр</title>
+<style>
+ :root{--bg:#cb929a;--card:#fff7f7;--ink:#26302f;--muted:#596260;--accent:#52be86;--accent2:#c24a1f;--line:#922b42;--soft:#f3dfe2;--deep:#922b42;--dark:#26302f;--rose:#d14f58}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:24px 18px 16px;background:linear-gradient(135deg,#52be86,#cb929a);border-bottom:3px solid var(--deep);color:var(--dark)}
+.wrap{max-width:980px;margin:auto;padding:0 16px}h1{margin:0;font-size:clamp(25px,5vw,36px)}header p{margin:6px 0 0;color:var(--muted)}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}button,.tab{border:0;border-radius:12px;padding:10px 14px;background:#f3dfe2;color:var(--ink);font-weight:650;cursor:pointer}button:hover{filter:brightness(.97)}button.active{background:var(--deep);color:white}.primary{background:var(--accent);color:var(--dark)}.secondary{background:var(--accent2);color:white}
+main{padding:10px 0 36px}.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:clamp(16px,3vw,24px);box-shadow:0 5px 18px #26332a0a}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.muted{color:var(--muted)}.hidden{display:none!important}
+.group-select{display:flex;gap:8px;margin:12px 0}.group-select button{flex:1}
+.cardface{text-align:center;min-height:240px;display:grid;place-content:center;gap:8px;background:var(--soft);border-radius:18px;margin:14px 0;padding:20px}
+.glyph{font-family:"Noto Serif CJK SC","SimSun",serif;font-size:clamp(70px,18vw,130px);line-height:1.2}.pinyin{font-size:24px;font-weight:700;color:var(--accent)}.meaning{font-size:19px}
+.controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.progress{height:8px;background:#f3dfe2;border-radius:20px;overflow:hidden;margin:12px 0}.progress>div{height:100%;background:var(--deep);width:0;transition:width .2s}
+.list{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}.item{border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;cursor:pointer;background:#fff}.item:hover{border-color:var(--accent)}.item .glyph{font-size:45px}.item small{display:block;color:var(--muted)}
+.quiz-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.quiz-options button{background:#f3dfe2;border:1px solid var(--line);padding:14px}.feedback{font-weight:700;min-height:28px;margin-top:10px}
+canvas{width:100%;height:300px;border:2px dashed var(--deep);border-radius:16px;background:#fff;touch-action:none}.rule{padding:12px 14px;border-radius:14px;background:#f6f7f3;margin:8px 0}.rule b{color:var(--accent)}
+footer{text-align:center;color:var(--muted);padding:20px;font-size:13px}
+</style></head>
+<body>
+<header><div class="wrap"><h1>🌱 Китайские ключи</h1><p>Учимся узнавать, читать и писать — понемногу каждый день</p></div></header>
+<div class="wrap">
+<nav>
+<button class="active" data-mode="learn">Карточки</button><button data-mode="quiz">Тест</button><button data-mode="write">Письмо</button><button data-mode="library">Список ключей</button><button data-mode="rules">Правила черт</button>
+</nav>
+<main>
+<section id="learn" class="panel">
+<div class="group-select"><button class="active" data-group="1">Группа 1</button><button data-group="2">Группа 2</button><button data-group="3">Группа 3</button><button data-group="4">Группа 4</button><button data-group="5">Группа 5</button><button data-group="6">Группа 6</button><button data-group="7">Группа 7</button><button data-group="8">Группа 8</button><button data-group="9">Группа 9</button></div>
+<div class="muted" id="counter"></div><div class="progress"><div id="bar"></div></div>
+<div class="cardface" id="flashcard"><div class="glyph" id="glyph">一</div><div class="pinyin hidden" id="pinyin">yī</div><div class="meaning hidden" id="meaning">один</div><div class="muted" id="hint">Нажми «Показать ответ»</div></div>
+<div class="controls"><button id="reveal" class="primary">Показать ответ</button><button id="prev">← Назад</button><button id="next">Далее →</button></div>
+</section>
+<section id="quiz" class="panel hidden">
+<div class="group-select"><button class="active" data-qgroup="1">Группа 1</button><button data-qgroup="2">Группа 2</button><button data-qgroup="3">Группа 3</button><button data-qgroup="4">Группа 4</button><button data-qgroup="5">Группа 5</button><button data-qgroup="6">Группа 6</button><button data-qgroup="7">Группа 7</button><button data-qgroup="8">Группа 8</button><button data-qgroup="9">Группа 9</button></div>
+<div class="muted" id="qcounter"></div><div class="cardface"><div class="glyph" id="qglyph">一</div><p id="qprompt">Что означает этот ключ?</p></div>
+<div class="quiz-options" id="options"></div><div class="feedback" id="feedback"></div><div class="controls"><button id="qnext" class="primary">Следующий вопрос</button></div><p class="muted">Очки за верные ответы: <span id="score">0</span></p>
+</section>
+<section id="write" class="panel hidden">
+<div class="group-select"><button class="active" data-wgroup="1">Группа 1</button><button data-wgroup="2">Группа 2</button><button data-wgroup="3">Группа 3</button><button data-wgroup="4">Группа 4</button><button data-wgroup="5">Группа 5</button><button data-wgroup="6">Группа 6</button><button data-wgroup="7">Группа 7</button><button data-wgroup="8">Группа 8</button><button data-wgroup="9">Группа 9</button></div>
+<label for="writepick">Выбери ключ:</label><select id="writepick" style="padding:10px;border-radius:10px;border:1px solid var(--line);margin:8px 0;width:100%"></select>
+<div class="cardface" style="min-height:120px"><div class="glyph" id="writeglyph">一</div><div id="writeinfo" class="muted"></div></div>
+<p class="muted">Попробуй написать ключ по памяти в поле ниже.</p><canvas id="draw"></canvas><div class="controls" style="margin-top:10px"><button id="clear">Очистить</button></div>
+</section>
+<section id="library" class="panel hidden"><div class="group-select"><button class="active" data-lgroup="0">Все группы</button><button data-lgroup="1">Группа 1</button><button data-lgroup="2">Группа 2</button><button data-lgroup="3">Группа 3</button><button data-lgroup="4">Группа 4</button><button data-lgroup="5">Группа 5</button><button data-lgroup="6">Группа 6</button><button data-lgroup="7">Группа 7</button><button data-lgroup="8">Группа 8</button><button data-lgroup="9">Группа 9</button></div><div class="list" id="list"></div></section>
+<section id="rules" class="panel hidden">
+<h2>Порядок написания черт</h2>
+<div class="rule"><b>1.</b> Иероглиф пишется сверху вниз.</div>
+<div class="rule"><b>2.</b> Иероглиф пишется слева направо.</div>
+<div class="rule"><b>3.</b> Сначала горизонтальные черты, затем вертикальные и откидные. Нижняя горизонтальная черта, если она не пересекается, пишется после вертикальной (например: 土, 王, 生).</div>
+<div class="rule"><b>4.</b> Сначала откидная влево, затем откидная вправо.</div>
+<div class="rule"><b>5.</b> Сначала пишутся черты, составляющие внешний контур, затем — черты внутри него; черта, замыкающая контур снизу, пишется в последнюю очередь.</div>
+<div class="rule"><b>6.</b> Сначала пишется вертикальная черта, находящаяся в центре (если она не пересекается горизонтальными), затем — боковые черты.</div>
+<div class="rule"><b>7.</b> Точка справа пишется последней.</div>
+</section>
+</main><footer>Учебный мини-тренажёр · данные можно дополнять по твоим конспектам</footer>
+</div>
+<script>
+const groups={
+1:[
+{g:"一",p:"yī",m:"единица",n:"№ 1 · точная таблица"},
+{g:"二",p:"èr",m:"два",n:"№ 7"},
+{g:"十",p:"shí",m:"десять",n:"№ 24"},
+{g:"干",p:"gān",m:"щит; вмешиваться",n:"№ 51"},
+{g:"丶",p:"zhǔ",m:"точка",n:"№ 3"},
+{g:"土",p:"tǔ",m:"земля",n:"№ 32"},
+{g:"士",p:"shì",m:"воин",n:"№ 33"},
+{g:"工",p:"gōng",m:"работа",n:"№ 48"},
+{g:"玉",p:"yù",m:"яшма",n:"№ 96"},
+{g:"王",p:"wáng",m:"царь; король",n:"Дополнительный знак из конспекта — в таблице ключей отдельно не указан"}
+],
+2:[
+{g:"丷",p:"",m:"две верхние точки; форма",n:"В таблице отдельно не указано — чтение уточнить"},
+{g:"丿",p:"piě",m:"откидная влево",n:"№ 4 · черта"},
+{g:"凵",p:"kǎn",m:"яма",n:"№ 17"},
+{g:"丶",p:"zhǔ",m:"точка",n:"№ 3 · черта"},
+{g:"大",p:"dà",m:"большой",n:"№ 37"},
+{g:"尸",p:"shī",m:"труп",n:"№ 44"},
+{g:"广",p:"guǎng",m:"навес",n:"№ 53"},
+{g:"羽",p:"yǔ",m:"перья; крылья",n:"№ 124"},
+{g:"彳",p:"chì",m:"шаг (левой ногой)",n:"№ 60"}
+],
+3:[
+{g:"亅",p:"jué",m:"вертикальная с крюком",n:"№ 6 · черта"},
+{g:"尢",p:"wāng",m:"хромой",n:"№ 43"},
+{g:"手",p:"shǒu",m:"рука",n:"№ 64 · вариант 扌"},
+{g:"毛",p:"máo",m:"шерсть; волосы",n:"№ 82"},
+{g:"玉",p:"yù",m:"яшма",n:"№ 96 · вариант ⺩"},
+{g:"行",p:"xíng",m:"идти; ряд",n:"№ 144"},
+{g:"竹",p:"zhú",m:"бамбук",n:"№ 118 · вариант ⺮"},
+{g:"身",p:"shēn",m:"тело (человека)",n:"№ 158"},
+{g:"門",p:"mén",m:"ворота",n:"№ 169 · упрощённая форма 门"},
+{g:"豆",p:"dòu",m:"бобы",n:"№ 151"}
+],
+4:[
+{g:"囗",p:"wéi",m:"окружать; ограда",n:"№ 31"},
+{g:"口",p:"kǒu",m:"рот",n:"№ 30"},
+{g:"田",p:"tián",m:"поле",n:"№ 102"},
+{g:"目",p:"mù",m:"глаз",n:"№ 109"},
+{g:"日",p:"rì",m:"солнце",n:"№ 72"},
+{g:"曰",p:"yuē",m:"говорить",n:"№ 83 · сверено с таблицей"},
+{g:"石",p:"shí",m:"камень",n:"№ 112"},
+{g:"卜",p:"bǔ",m:"гадать",n:"№ 25"},
+{g:"土",p:"tǔ",m:"земля",n:"№ 32 · повтор ключа из конспекта"}
+],
+5:[
+{g:"人",p:"rén",m:"человек",n:"№ 9 · вариант 亻"},
+{g:"大",p:"dà",m:"большой",n:"№ 37"},
+{g:"入",p:"rù",m:"входить",n:"№ 11"},
+{g:"八",p:"bā",m:"восемь; делить",n:"№ 12"},
+{g:"父",p:"fù",m:"отец",n:"№ 88"},
+{g:"又",p:"yòu",m:"правая рука; опять",n:"№ 29 · уточнено по таблице"},
+{g:"門",p:"mén",m:"ворота",n:"№ 169 · упрощённая форма 门"},
+{g:"白",p:"bái",m:"белый",n:"№ 106"},
+{g:"自",p:"zì",m:"сам; нос",n:"№ 132"}
+],
+6:[
+{g:"凵",p:"kǎn",m:"яма",n:"№ 17"},
+{g:"屮",p:"chè",m:"росток",n:"№ 45"},
+{g:"山",p:"shān",m:"гора",n:"№ 46"},
+{g:"缶",p:"fǒu",m:"глиняная посуда; керамика",n:"№ 121"},
+{g:"艸",p:"cǎo",m:"трава",n:"№ 140 · форма 艹"},
+{g:"韋",p:"wéi",m:"кожа",n:"№ 178"},
+{g:"齒",p:"chǐ",m:"зубы",n:"№ 211 · упрощённая форма 齿"},
+{g:"川",p:"chuān",m:"поток; река",n:"вариант 巛"},
+{g:"女",p:"nǚ",m:"женщина",n:"№ 28"}
+],
+7:[
+{g:"冫",p:"bīng",m:"лёд",n:"№ 15"},
+{g:"水",p:"shuǐ",m:"вода",n:"№ 85 · вариант 氵"},
+{g:"木",p:"mù",m:"дерево",n:"№ 75"},
+{g:"禾",p:"hé",m:"хлеб на корню",n:"№ 115"},
+{g:"米",p:"mǐ",m:"рис",n:"№ 119"},
+{g:"来",p:"lái",m:"приходить",n:"по конспекту"},
+{g:"采",p:"cǎi",m:"собирать; добывать",n:"№ 165 · чтение строки уточнено по таблице"},
+{g:"麻",p:"má",m:"конопля",n:"№ 200"},
+{g:"秦",p:"qín",m:"Цинь",n:"№ 202"}
+],
+8:[
+{g:"冖",p:"mì",m:"крышка",n:"№ 14"},
+{g:"山",p:"shān",m:"гора",n:"№ 40"},
+{g:"穴",p:"xué",m:"пещера",n:"№ 116"},
+{g:"欠",p:"qiàn",m:"недостаток",n:"№ 76"},
+{g:"皮",p:"pí",m:"кожа",n:"№ 107"},
+{g:"矛",p:"máo",m:"копьё",n:"№ 110"},
+{g:"勹",p:"bāo",m:"обёртывать",n:"№ 20"},
+{g:"夕",p:"xī",m:"вечер",n:"№ 22"},
+{g:"多",p:"duō",m:"много",n:"№ 23"},
+{g:"攵",p:"pū",m:"ударять; бить",n:"вариант 攴 · № 66"}
+],
+9:[
+{g:"又",p:"yòu",m:"правая рука; опять",n:"№ 29"},
+{g:"夂",p:"zhǐ",m:"приходить медленно",n:"по конспекту; ключ из таблицы"},
+{g:"夭",p:"yāo",m:"молодой; преждевременно",n:"форма по конспекту — чтение уточнено"},
+{g:"支",p:"zhī",m:"ветка; поддерживать",n:"№ 65"},
+{g:"攴",p:"pū",m:"ударять; бить",n:"№ 66"},
+{g:"文",p:"wén",m:"текст; письменность",n:"№ 67"},
+{g:"殳",p:"shū",m:"древковое оружие",n:"№ 79"},
+{g:"夊",p:"suī",m:"медленно идти",n:"по конспекту"},
+{g:"鼓",p:"gǔ",m:"барабан",n:"№ 207"},
+{g:"麥",p:"mài",m:"пшеница",n:"№ 199 · упрощённая форма 麦"}
+]};
+let mode="learn", group=1, idx=0, qgroup=1, qidx=0, score=0, wgroup=1, lgroup=1, revealed=false;
+const $=id=>document.getElementById(id), data=()=>groups[group], qdata=()=>groups[qgroup], wdata=()=>groups[wgroup];
+function setMode(m){mode=m;document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!==m));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.mode===m));}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+function renderCard(){let x=data()[idx%data().length];$("glyph").textContent=x.g;$("pinyin").textContent=x.p;$("meaning").textContent=x.m;$("hint").textContent=x.n+" · нажми «Показать ответ»";$("pinyin").classList.toggle("hidden",!revealed);$("meaning").classList.toggle("hidden",!revealed);$("counter").textContent=`Карточка ${idx+1} из ${data().length}`;$("bar").style.width=((idx+1)/data().length*100)+"%";$("reveal").textContent=revealed?"Скрыть ответ":"Показать ответ";}
+document.querySelectorAll("[data-group]").forEach(b=>b.onclick=()=>{group=+b.dataset.group;idx=0;revealed=false;document.querySelectorAll("[data-group]").forEach(x=>x.classList.toggle("active",x===b));renderCard()});
+$("reveal").onclick=()=>{revealed=!revealed;renderCard()};$("next").onclick=()=>{idx=(idx+1)%data().length;revealed=false;renderCard()};$("prev").onclick=()=>{idx=(idx+data().length-1)%data().length;revealed=false;renderCard()};
+function makeQuiz(){let arr=qdata();qidx%=arr.length;let x=arr[qidx];$("qglyph").textContent=x.g;$("qprompt").textContent="Выбери значение / перевод";$("qcounter").textContent=`Вопрос ${qidx+1} из ${arr.length}`;$("feedback").textContent="";let opts=[x.m];while(opts.length<4){let m=arr[Math.floor(Math.random()*arr.length)].m;if(!opts.includes(m))opts.push(m)}opts.sort(()=>Math.random()-.5);$("options").innerHTML="";opts.forEach(o=>{let b=document.createElement("button");b.textContent=o;b.onclick=()=>{document.querySelectorAll("#options button").forEach(bb=>bb.disabled=true);if(o===x.m){score++;$("feedback").textContent="Верно! ✨";}else{$("feedback").textContent="Пока нет — правильный ответ: "+x.m;} $("score").textContent=score;};$("options").appendChild(b)});}
+document.querySelectorAll("[data-qgroup]").forEach(b=>b.onclick=()=>{qgroup=+b.dataset.qgroup;qidx=0;document.querySelectorAll("[data-qgroup]").forEach(x=>x.classList.toggle("active",x===b));makeQuiz()});$("qnext").onclick=()=>{qidx++;makeQuiz()};
+function fillSelect(){let sel=$("writepick");sel.innerHTML="";wdata().forEach((x,i)=>{let o=document.createElement("option");o.value=i;o.textContent=x.g+" "+x.p+" · "+x.m;sel.appendChild(o)});showWrite()}
+function showWrite(){let x=wdata()[+$("writepick").value||0];if(!x)return;$("writeglyph").textContent=x.g;$("writeinfo").textContent=x.p+" · "+x.m+" · "+x.n}
+document.querySelectorAll("[data-wgroup]").forEach(b=>b.onclick=()=>{wgroup=+b.dataset.wgroup;document.querySelectorAll("[data-wgroup]").forEach(x=>x.classList.toggle("active",x===b));fillSelect()});$("writepick").onchange=showWrite;
+function renderList(){let entries=(lgroup===0?[1,2,3,4,5,6,7,8,9]:[lgroup]).flatMap(gn=>groups[gn].map((x,i)=>({x,gn,i})));$("list").innerHTML="";entries.forEach(({x,gn,i})=>{let div=document.createElement("div");div.className="item";div.innerHTML=`<small>Группа ${gn}</small><div class="glyph">${x.g}</div><b>${x.p}</b><small>${x.m}</small><small>${x.n}</small>`;div.onclick=()=>{group=gn;idx=i;revealed=true;setMode("learn");document.querySelectorAll("[data-group]").forEach(b=>b.classList.toggle("active",+b.dataset.group===group));renderCard()};$("list").appendChild(div)})}
+document.querySelectorAll("[data-lgroup]").forEach(b=>b.onclick=()=>{lgroup=+b.dataset.lgroup;document.querySelectorAll("[data-lgroup]").forEach(x=>x.classList.toggle("active",x===b));renderList()});
+const canvas=$("draw"),ctx=canvas.getContext("2d");function resize(){let r=canvas.getBoundingClientRect();canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);ctx.lineWidth=4;ctx.lineCap="round";ctx.strokeStyle="#922b42"}resize();window.addEventListener("resize",resize);let drawing=false;function pos(e){let r=canvas.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}canvas.onpointerdown=e=>{drawing=true;canvas.setPointerCapture(e.pointerId);let p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y)};canvas.onpointermove=e=>{if(!drawing)return;let p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke()};canvas.onpointerup=canvas.onpointercancel=()=>drawing=false;$("clear").onclick=()=>ctx.clearRect(0,0,canvas.width,canvas.height);
+renderCard();makeQuiz();fillSelect();renderList();
+</script></body></html>
